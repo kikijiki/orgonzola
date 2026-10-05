@@ -1,0 +1,2 @@
+# Model files are large downloads; keep the dev watcher from rebuilding when one is fetched.
+resources/models/

@@ -1,0 +1,24 @@
+[package]
+name = "core-github"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Host-agnostic GitHub access seams: TokenProvider, Transport, conditional-GET client, poll schedule."
+
+[features]
+# Off by default. The desktop host enables `http` for the reqwest transport and the OAuth device flow.
+default = []
+http = ["dep:reqwest", "dep:serde", "dep:serde_json"]
+
+[dependencies]
+thiserror = { workspace = true }
+reqwest = { workspace = true, optional = true }
+serde = { workspace = true, optional = true }
+serde_json = { workspace = true, optional = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+wiremock = "0.6"

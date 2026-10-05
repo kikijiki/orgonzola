@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --border: 214.3 31.8% 91.4%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --border: 217.2 32.6% 17.5%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* prefers-reduced-motion: remove decorative movement (hover lifts, chart sweeps). Progress and
+   spinners keep reporting state without moving. Colour and opacity transitions stay. `animation: none`
+   is blunt on purpose: it is the only way to reach keyframes in third-party stylesheets such as
+   @xyflow/react. Recharts animates in JavaScript; see `lib/useReducedMotion.ts`. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    /* Drop the transitioned properties that move pixels; a progress bar jumps instead of gliding. */
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke,
+      opacity, box-shadow !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* A frozen spinner shows nothing, so replace the rotation with a slow opacity pulse. */
+  .animate-spin {
+    animation: reduced-motion-breathe 2s ease-in-out infinite !important;
+  }
+
+  /* `animate-pulse` is opacity only, so keep it, slower. */
+  .animate-pulse {
+    animation: reduced-motion-breathe 3s ease-in-out infinite !important;
+  }
+}
+
+@keyframes reduced-motion-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}

@@ -1,0 +1,105 @@
+# Builds desktop installers on a version tag and attaches them to a draft GitHub release.
+#
+# Never run end to end. Builds are unsigned until the signing secrets below are set, so macOS
+# Gatekeeper and Windows SmartScreen will warn.
+#
+# The LLM narrator and assistant only have a Vulkan backend, so macOS builds omit them
+# (`--no-default-features`). Linux and Windows build them and need the Vulkan SDK.
+name: cd-release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: macos-latest # Apple silicon
+            target: aarch64-apple-darwin
+            cargo_args: -- --no-default-features
+          - platform: macos-15-intel
+            target: x86_64-apple-darwin
+            cargo_args: -- --no-default-features
+          - platform: ubuntu-24.04 # 22.04 has no glslc package
+            target: x86_64-unknown-linux-gnu
+            cargo_args: ""
+          - platform: windows-latest
+            target: x86_64-pc-windows-msvc
+            cargo_args: ""
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # WebKitGTK and GTK for Tauri; libvulkan-dev and glslc for llama.cpp's Vulkan backend.
+      - name: Install Linux build deps
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf \
+            libgtk-3-dev libvulkan-dev glslc
+
+      # llama.cpp's Vulkan backend needs the SDK (headers, loader, glslc). bindgen needs libclang,
+      # which the runner image ships with LLVM.
+      - name: Install Windows build deps
+        if: runner.os == 'Windows'
+        uses: jakoch/install-vulkan-sdk-action@v1
+        with:
+          vulkan_version: latest
+          cache: true
+      - name: Point bindgen at libclang
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: echo "LIBCLANG_PATH=C:\Program Files\LLVM\bin" >> $env:GITHUB_ENV
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: ui/pnpm-lock.yaml
+
+      - name: Install UI deps
+        run: pnpm --dir ui install --frozen-lockfile
+
+      # The bundle includes the ML models, so fetch them before the bundler runs. The LLM is
+      # skipped on macOS, where it is not built.
+      - uses: extractions/setup-just@v2
+      - name: Fetch bundled models
+        shell: bash
+        run: |
+          just fetch-model
+          if [ "$RUNNER_OS" != "macOS" ]; then just fetch-llm-model; fi
+
+      - name: Build + release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Built-in GitHub OAuth client id for one-click sign-in. Unset: users paste a token instead.
+          ORGONZOLA_GITHUB_CLIENT_ID: ${{ secrets.ORGONZOLA_GITHUB_CLIENT_ID }}
+          # Signing secrets. Unset means an unsigned build. macOS notarization:
+          # APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
+          # APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          # APPLE_SIGNING_IDENTITY: ${{ secrets.APPLE_SIGNING_IDENTITY }}
+          # APPLE_ID: ${{ secrets.APPLE_ID }}
+          # APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          # Windows Authenticode goes through the bundle's signing fields or a signing action.
+        with:
+          args: --features fastembed --target ${{ matrix.target }} ${{ matrix.cargo_args }}
+          tagName: ${{ github.ref_name }}
+          releaseName: "orgonzola ${{ github.ref_name }}"
+          releaseDraft: true
+          prerelease: false

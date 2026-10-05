@@ -1,0 +1,18 @@
+[package]
+name = "core-ritual"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "orgonzola retrospective rituals: standup agenda + sprint review, deterministic over the store."
+
+[dependencies]
+core-store = { path = "../core-store" }
+core-summary = { path = "../core-summary" }
+serde = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }

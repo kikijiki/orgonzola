@@ -1,0 +1,16 @@
+[package]
+name = "core-forge"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Host-agnostic forge abstraction: the Forge trait + normalized data contracts that a hosting service (GitHub, GitLab, Gitea, ...) implements."
+
+[dependencies]
+core-store = { path = "../core-store" }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }

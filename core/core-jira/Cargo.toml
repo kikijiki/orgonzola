@@ -1,0 +1,32 @@
+[package]
+name = "core-jira"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Jira tracker: read-only sync of issues and sprints into the work_items/sprints model, and PROJ-123 PR linking. Transport-injected and host-agnostic."
+
+[features]
+# The live tests need the reqwest JiraHttp transport and, for the join test, a real GitHub sync.
+# Off by default so unit tests stay headless.
+default = []
+http = ["dep:reqwest", "core-github/http", "core-forge-github/http"]
+
+[dependencies]
+core-store = { path = "../core-store" }
+core-graph = { path = "../core-graph" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tokio = { workspace = true }
+reqwest = { workspace = true, optional = true }
+
+[dev-dependencies]
+# Dev-only, for the live tests: a real GitHub sync and the say-do and epic-progress summaries.
+# Neither depends on core-jira, so there is no cycle.
+core-github = { path = "../core-github" }
+core-forge-github = { path = "../core-forge-github" }
+core-sync = { path = "../core-sync" }
+core-summary = { path = "../core-summary" }

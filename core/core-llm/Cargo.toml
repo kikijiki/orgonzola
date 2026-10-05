@@ -1,0 +1,32 @@
+[package]
+name = "core-llm"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Local LLM engine: rephrases a deterministic brief with an in-process GGUF model on llama.cpp."
+
+[dependencies]
+# The local inference engine: llama.cpp via the `llama-cpp-2` bindings. Compiles the vendored llama.cpp
+# (cmake and a C++ toolchain). In-process: no server, no API key, no network. Chosen over candle and
+# mistral.rs for its Vulkan backend, the only route to an Intel Arc GPU.
+llama-cpp-2 = { version = "0.1.146", optional = true }
+# Stateful UTF-8 decoding of tokens (a multi-byte char can span tokens). Must match the encoding_rs
+# version llama-cpp-2 uses.
+encoding_rs = { version = "0.8", optional = true }
+# The blocking decode loop runs on `spawn_blocking` and streams tokens over a channel.
+tokio = { version = "1", features = ["rt", "sync"], optional = true }
+
+[dev-dependencies]
+tokio = { version = "1", features = ["macros", "rt"] }
+
+[features]
+# On by default with Vulkan (Intel Arc, NVIDIA, AMD); llama.cpp falls back to CPU when there is no
+# device. The build needs the Vulkan SDK and glslc.
+default = ["vulkan"]
+# Engine base, CPU only. Use `--no-default-features --features llm` for a build without the Vulkan toolchain.
+llm = ["dep:llama-cpp-2", "dep:encoding_rs", "dep:tokio"]
+# Vulkan backend (the default). Offloads all layers.
+vulkan = ["llm", "llama-cpp-2/vulkan"]

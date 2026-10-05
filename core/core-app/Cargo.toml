@@ -1,0 +1,13 @@
+[package]
+name = "core-app"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Host-agnostic core application logic for orgonzola (health probe)."
+
+[dependencies]
+core-model = { path = "../core-model" }
+tokio = { workspace = true }

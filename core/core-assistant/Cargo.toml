@@ -1,0 +1,36 @@
+[package]
+name = "core-assistant"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Conversational assistant: a Rig agent over the local llama.cpp engine, retrieval, and read-only knowledge-base tools."
+
+[dependencies]
+core-llm = { path = "../core-llm" }
+core-embed = { path = "../core-embed" }
+core-store = { path = "../core-store" }
+core-summary = { path = "../core-summary" }
+core-metrics = { path = "../core-metrics" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+async-trait = { workspace = true }
+tokio = { workspace = true }
+
+futures = { version = "0.3", optional = true }
+time = { workspace = true, features = ["formatting"], optional = true }
+
+[features]
+# Off by default in core: pulls Rig and the local LLM engine. The host enables it.
+default = []
+assistant = ["dep:rig", "dep:futures", "dep:time", "core-llm/vulkan"]
+
+# rig-core's lib is `rig_core`; renamed to `rig` to match its docs.
+[dependencies.rig]
+package = "rig-core"
+version = "0.38"
+optional = true
+default-features = false

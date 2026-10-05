@@ -1,0 +1,24 @@
+[package]
+name = "core-summary"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "orgonzola digests: deterministic per-scope summaries from the store + metrics. LLM prose is additive."
+
+[dependencies]
+core-model = { path = "../core-model" }
+core-store = { path = "../core-store" }
+core-metrics = { path = "../core-metrics" }
+core-codehealth = { path = "../core-codehealth" }
+core-scorecard = { path = "../core-scorecard" }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+# Test-only: the WIP-aging band fixtures build timestamps relative to a fixed clock.
+time = { workspace = true, features = ["formatting"] }

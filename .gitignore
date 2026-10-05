@@ -1,0 +1,49 @@
+# Rust build artifacts
+/target
+**/target
+
+# Tauri-generated capability schemas
+hosts/desktop/gen/
+
+# Node / TypeScript UI
+node_modules/
+**/node_modules/
+**/dist/
+.pnpm-store/
+
+# local SQLite databases
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# local env and secrets
+.env
+.env.*
+!.env.example
+
+# ML model files fetched by `just fetch-model`. The README stays so the bundle resource path resolves.
+hosts/desktop/resources/models/*
+!hosts/desktop/resources/models/README.md
+**/.fastembed_cache/
+
+# nix
+result
+result-*
+
+# Claude Code local config
+.claude/
+
+# gitea fixture local state: the downloaded binary and work dir, and the cached admin token
+tools/gitea-fixture/.gitea-bin/
+tools/gitea-fixture/.gitea-token
+
+# agent scratch state
+.mfw/
+.agents/
+skills-lock.json
+
+# OS / editor cruft
+.DS_Store
+*.swp
+.direnv/

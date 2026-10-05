@@ -1,0 +1,5 @@
+# Tracks stable. The exact toolchain is pinned by the rust-overlay input in flake.lock.
+[toolchain]
+channel    = "stable"
+components = ["rust-src", "rust-analyzer", "clippy", "rustfmt"]
+profile    = "minimal"

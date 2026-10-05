@@ -1,0 +1,69 @@
+[package]
+name = "orgonzola-desktop"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "orgonzola desktop shell (Tauri). Owns the long-running process; the UI is a view onto it."
+
+# The lib holds the command/event surface and the bindings exporter (no generate_context!, so
+# `cargo test --lib` needs no frontend dist). The binary owns run() and the Tauri context.
+[lib]
+name = "orgonzola_desktop"
+path = "src/lib.rs"
+
+[[bin]]
+name = "orgonzola-desktop"
+path = "src/main.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+core-model = { path = "../../core/core-model" }
+core-app = { path = "../../core/core-app" }
+core-github = { path = "../../core/core-github", features = ["http"] }
+core-forge = { path = "../../core/core-forge" }
+core-forge-github = { path = "../../core/core-forge-github" }
+core-forge-gitea = { path = "../../core/core-forge-gitea" }
+core-store = { path = "../../core/core-store" }
+core-sync = { path = "../../core/core-sync" }
+core-jira = { path = "../../core/core-jira" }
+core-summary = { path = "../../core/core-summary" }
+core-scorecard = { path = "../../core/core-scorecard" }
+core-ritual = { path = "../../core/core-ritual" }
+core-embed = { path = "../../core/core-embed" }
+core-llm = { path = "../../core/core-llm" }
+core-assistant = { path = "../../core/core-assistant" }
+# OS keychain for forge tokens. Pure-Rust Secret Service backend; needs a running secret service at
+# runtime on Linux.
+keyring = { version = "3", features = ["sync-secret-service", "crypto-rust"] }
+# OSV lookups and the streamed LLM model download (`stream` enables `bytes_stream()`).
+reqwest = { workspace = true, features = ["json", "stream"] }
+# StreamExt for the model download.
+futures-util = "0.3"
+# Opens forge URLs in the system browser; a Tauri webview does not open `target=_blank` links.
+open = "5"
+serde = { workspace = true }
+serde_json = { workspace = true }
+tokio = { workspace = true }
+time = { workspace = true, features = ["formatting"] }
+dotenvy = { workspace = true }
+tauri = { version = "2", features = [] }
+tauri-specta = { version = "=2.0.0-rc.21", features = ["derive", "typescript"] }
+specta = { workspace = true }
+specta-typescript = "0.0.9"
+
+
+[features]
+# Local LLM narrator, on by default with Vulkan (falls back to CPU at runtime). Whether it runs is a
+# Settings toggle plus the model being present.
+default = ["llm", "assistant"]
+llm = ["core-llm/vulkan"]
+# Conversational assistant: a Rig agent over the local engine. Same runtime toggle as the narrator.
+assistant = ["core-assistant/assistant"]
+# Real embedder (jina-embeddings-v2-base-code) loaded from the bundled model files; run
+# `just fetch-model` first. Off by default so plain builds skip onnxruntime.
+fastembed = ["core-embed/fastembed"]

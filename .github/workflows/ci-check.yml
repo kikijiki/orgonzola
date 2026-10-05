@@ -1,0 +1,91 @@
+# Same checks as the local `just` recipes. CI installs packages directly instead of using the nix
+# shell, so this file also lists what a non-nix build needs.
+name: ci-check
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch: {}
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rust:
+    # glslc is not packaged for ubuntu-22.04.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      # WebKitGTK and GTK: the Tauri macros need them even for `cargo check`. libvulkan-dev and glslc:
+      # core-llm enables the `vulkan` feature by default.
+      - name: Install Linux build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf \
+            libgtk-3-dev libvulkan-dev glslc
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --features http,core-embed/fastembed -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace --features http
+
+  ui:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: ui/pnpm-lock.yaml
+
+      - name: Install UI deps
+        run: pnpm --dir ui install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm --dir ui run typecheck
+
+      - name: Lint
+        run: pnpm --dir ui run lint
+
+      - name: Test
+        run: pnpm --dir ui run test
+
+  docs:
+    # lychee's binary needs glibc 2.38 or newer.
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check markdown formatting
+        run: npx --yes prettier@3 --check $(git ls-files '*.md')
+
+      - name: Check for non-ASCII characters
+        run: |
+          if grep -nP '[^\x00-\x7F]' $(git ls-files '*.md'); then
+            echo "non-ASCII characters found (see above) - replace with ASCII equivalents"
+            exit 1
+          fi
+
+      # `with:` does no shell substitution, hence the glob. lychee honours .gitignore.
+      - name: Check links
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --no-progress './**/*.md'
+          fail: true

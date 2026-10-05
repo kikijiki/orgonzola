@@ -1,0 +1,15 @@
+[package]
+name = "core-codehealth"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Behavioral code analysis: hotspots, churn, ownership and bus-factor risk. Pure, no network."
+
+[dependencies]
+serde = { workspace = true }
+# Grammars come from core-embed's `tree_sitter_language`, so there is one list of parseable languages.
+core-embed = { path = "../core-embed" }
+tree-sitter = { workspace = true }

@@ -1,0 +1,17 @@
+[package]
+name = "core-metrics"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "orgonzola flow metrics + watchdog rules. System-level, deterministic, no LLM, no people-ranking."
+
+[dependencies]
+core-model = { path = "../core-model" }
+core-store = { path = "../core-store" }
+time = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }

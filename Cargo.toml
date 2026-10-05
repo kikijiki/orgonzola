@@ -1,0 +1,59 @@
+# orgonzola cargo workspace.
+#   core/*         host-agnostic Rust, no host dependencies, builds and tests headless.
+#   hosts/desktop  the Tauri shell.
+[workspace]
+resolver = "2"
+members = [
+    "core/core-model",
+    "core/core-app",
+    "core/core-github",
+    "core/core-store",
+    "core/core-forge",
+    "core/core-forge-github",
+    "core/core-forge-gitea",
+    "core/core-sync",
+    "core/core-graph",
+    "core/core-jira",
+    "core/core-embed",
+    "core/core-metrics",
+    "core/core-codehealth",
+    "core/core-scorecard",
+    "core/core-summary",
+    "core/core-ritual",
+    "core/core-planning",
+    "core/core-llm",
+    "core/core-assistant",
+    "hosts/desktop",
+]
+
+[workspace.package]
+edition = "2021"
+rust-version = "1.96"
+license = "MIT"
+repository = "https://github.com/kikijiki/orgonzola"
+authors = ["Matteo Bernacchia <dev@kikijiki.com>"]
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+base64 = "0.22"
+thiserror = "2"
+async-trait = "0.1"
+time = { version = "0.3", features = ["parsing"] }
+dotenvy = "0.15"
+tokio = { version = "1", features = ["rt", "rt-multi-thread", "macros", "time", "sync"] }
+sqlx = { version = "0.8", default-features = false, features = [
+    "runtime-tokio",
+    "sqlite",
+    "migrate",
+    "macros",
+] }
+# Single reqwest declaration so the feature set is the same everywhere. rustls only; members add
+# extras (desktop: json, stream). rig-core (via core-assistant) pulls reqwest 0.13, so two majors
+# still build. Moving to 0.13 grows the binary about 2 MB and swaps the TLS roots.
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls"] }
+# Shared by core-codehealth and core-embed so both use one grammar ABI.
+tree-sitter = "0.26"
+# Exact pin: must match tauri-specta's `=2.0.0-rc.22` requirement.
+specta = { version = "=2.0.0-rc.22", features = ["derive"] }

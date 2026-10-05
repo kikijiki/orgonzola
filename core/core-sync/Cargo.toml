@@ -1,0 +1,27 @@
+[package]
+name = "core-sync"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "orgonzola incremental sync: pull a forge's activity into the store, off the Forge trait."
+
+[dependencies]
+core-forge = { path = "../core-forge" }
+core-store = { path = "../core-store" }
+core-graph = { path = "../core-graph" }
+core-embed = { path = "../core-embed" }
+core-codehealth = { path = "../core-codehealth" }
+serde = { workspace = true }
+thiserror = { workspace = true }
+# The scheduler uses tokio's interval timer.
+tokio = { workspace = true }
+
+[dev-dependencies]
+# Tests use core-forge's FakeForge; the `sync` example uses the live GitHub forge over `http`.
+core-github = { path = "../core-github", features = ["http"] }
+core-forge-github = { path = "../core-forge-github" }
+serde_json = { workspace = true }
+dotenvy = { workspace = true }

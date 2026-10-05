@@ -1,0 +1,5 @@
+# pnpm 11 blocks dependency build scripts unless allowlisted. Both packages fetch a native binary in a
+# postinstall.
+allowBuilds:
+  '@biomejs/biome': true
+  esbuild: true

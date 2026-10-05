@@ -1,0 +1,12 @@
+[package]
+name = "core-scorecard"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Deterministic repo scorecards: tier-tagged rules over repo facts -> Bronze/Silver/Gold. Pure, no network/LLM."
+
+[dependencies]
+serde = { workspace = true }

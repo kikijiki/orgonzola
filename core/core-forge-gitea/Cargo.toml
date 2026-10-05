@@ -1,0 +1,26 @@
+[package]
+name = "core-forge-gitea"
+version = "0.1.0"
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+repository.workspace = true
+authors.workspace = true
+description = "Gitea/Forgejo implementation of the core-forge Forge trait. Reuses the HTTP/auth/conditional-GET client; owns Gitea's REST paths + params."
+
+[features]
+# The live test needs the reqwest transport. Off by default so unit tests stay headless.
+default = []
+http = ["core-github/http"]
+
+[dependencies]
+core-github = { path = "../core-github" }
+core-forge = { path = "../core-forge" }
+core-store = { path = "../core-store" }
+base64 = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }
+core-sync = { path = "../core-sync" }
